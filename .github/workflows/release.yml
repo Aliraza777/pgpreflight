@@ -1,0 +1,67 @@
+name: Release
+
+# Publishes to npm with Trusted Publishing (OIDC): no npm token is stored in GitHub.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Run every step but only `npm publish --dry-run`"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGPREFLIGHT_TEST_URL: postgres://postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Use an npm that supports Trusted Publishing (>= 11.5.1)
+        run: npm install -g npm@11.15.0 && npm --version
+      - name: Check the release tag matches package.json
+        if: github.event_name == 'release'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Release tag v$tag does not match package.json version $version"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node dist/cli.js --version
+      - name: Publish (dry run)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry-run
+        run: |
+          npm version prerelease --preid "dryrun.${GITHUB_RUN_ID}" --no-git-tag-version
+          npm publish --access public --tag dryrun --dry-run
+      - name: Publish
+        if: github.event_name == 'release' || !inputs.dry-run
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [[ "$version" == *-* || "${{ github.event.release.prerelease }}" == "true" ]]; then
+            npm publish --access public --tag next
+          else
+            npm publish --access public
+          fi

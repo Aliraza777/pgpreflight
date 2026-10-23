@@ -1,0 +1,53 @@
+{
+  "name": "pgpreflight",
+  "version": "0.1.0",
+  "description": "Pre-flight check for Postgres migrations (Prisma, Drizzle, plain SQL): finds migrations that will fail, lock big tables, or lose data, by checking them against your real database.",
+  "type": "module",
+  "bin": {
+    "pgpreflight": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write ."
+  },
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "migrations",
+    "prisma",
+    "drizzle",
+    "zero-downtime",
+    "database",
+    "lint",
+    "cli",
+    "devops"
+  ],
+  "author": "aliwahlah <aliwahlah777@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "15.0.0",
+    "libpg-query": "18.1.5",
+    "pg": "8.23.1",
+    "pgsql-deparser": "18.3.10",
+    "picocolors": "1.1.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "25.9.9",
+    "@types/pg": "8.23.1",
+    "tsup": "8.5.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.3"
+  }
+}
