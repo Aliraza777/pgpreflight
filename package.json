@@ -1,6 +1,6 @@
 {
   "name": "pgpreflight",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.0",
   "description": "Pre-flight check for Postgres migrations (Prisma, Drizzle, plain SQL): finds migrations that will fail, lock big tables, or lose data, by checking them against your real database.",
   "homepage": "https://github.com/Aliraza777/pgpreflight#readme",
   "repository": {
